@@ -1,5 +1,13 @@
 import gradio as gr
 from huggingface_hub import InferenceClient
+from llama_cpp import Llama
+
+
+llm = Llama.from_pretrained(
+	repo_id="ft-lora/llama3.2-3b-gguf-q4km",
+	filename="llama3.2-3b-instruct-finetuned.gguf",
+    n_ctx=1024,
+)
 
 
 def respond(
@@ -15,7 +23,7 @@ def respond(
     For more information on `huggingface_hub` Inference API support, please check the docs: https://huggingface.co/docs/huggingface_hub/v0.22.2/en/guides/inference
     """
     # Model: the HuggingFace Transformers model saved during the last iteration of training
-    client = InferenceClient(token=hf_token.token, model="ft-lora/llama3.2-3b-instruct-finetuned")
+    # client = InferenceClient(token=hf_token.token, model="ft-lora/llama3.2-3b-instruct-finetuned")
 
     messages = [{"role": "system", "content": system_message}]
 
@@ -25,7 +33,7 @@ def respond(
 
     response = ""
 
-    for message in client.chat_completion(
+    for message in llm.create_chat_completion(   
         messages,
         max_tokens=max_tokens,
         stream=True,
