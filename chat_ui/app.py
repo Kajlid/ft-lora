@@ -1,8 +1,10 @@
 import gradio as gr
 from huggingface_hub import InferenceClient
+import subprocess
 from llama_cpp import Llama
 from huggingface_hub import hf_hub_download
 
+subprocess.run("pip install -V llama_cpp_python==0.3.1", shell=True)
 # Download GGUF model into HF Space storage
 model_path = hf_hub_download(
     repo_id="ft-lora/llama3.2-3b-gguf-q4km",
