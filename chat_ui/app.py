@@ -1,5 +1,4 @@
 import subprocess
-subprocess.run("pip install --upgrade gradio", shell=True)
 import gradio as gr
 from huggingface_hub import hf_hub_download
 
@@ -64,7 +63,6 @@ For information on how to customize the ChatInterface, peruse the gradio docs: h
 """
 chatbot = gr.ChatInterface(
     respond,
-    type="messages",
     additional_inputs=[
         gr.Textbox(value="You are a friendly Chatbot.", label="System message"),
         gr.Slider(minimum=1, maximum=2048, value=512, step=1, label="Max new tokens"),
