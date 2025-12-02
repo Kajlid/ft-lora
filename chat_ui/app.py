@@ -1,8 +1,9 @@
-import gradio as gr
 import subprocess
+subprocess.run("pip install --upgrade gradio", shell=True)
+import gradio as gr
 from huggingface_hub import hf_hub_download
 
-subprocess.run("pip install -V llama_cpp_python==0.3.1", shell=True)
+subprocess.run("pip install llama_cpp_python==0.3.1", shell=True)
 from llama_cpp import Llama
 
 # Download GGUF model into HF Space storage
