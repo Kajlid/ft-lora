@@ -15,54 +15,36 @@ model_path = hf_hub_download(
 llm = Llama(
 	model_path=model_path,
     n_ctx=2048,
+    use_mmap=True,    # use memory-mapped file to load a model
+    chat_format="llama-3",
 )
 
 
-def respond(
-    message,
-    history: list[dict[str, str]],
-    system_message,
-    max_tokens,
-    temperature,
-    top_p,
-    hf_token: gr.OAuthToken,
-):
-    """
-    For more information on `huggingface_hub` Inference API support, please check the docs: https://huggingface.co/docs/huggingface_hub/v0.22.2/en/guides/inference
-    """
-    # Model: the HuggingFace Transformers model saved during the last iteration of training
-    # client = InferenceClient(token=hf_token.token, model="ft-lora/llama3.2-3b-instruct-finetuned")
-
+def respond(message, history, system_message, max_tokens, temperature, top_p):
     messages = [{"role": "system", "content": system_message}]
     
-    for human, bot in history:
-        messages.append({"role": "user", "content": human})
-        messages.append({"role": "assistant", "content": bot})
+    for conv in history:
+        messages.append(conv)      # add historical converational turns into history
 
     messages.append({"role": "user", "content": message})
     response = ""
 
-    for message in llm.create_chat_completion(   
-        messages,
+    for chunk in llm.create_chat_completion(   
+        messages=messages,
         max_tokens=max_tokens,
         stream=True,
         temperature=temperature,
         top_p=top_p,
     ):
-        choices = message.choices
-        token = ""
-        if len(choices) and choices[0].delta.content:
-            token = choices[0].delta.content
-
+        delta = chunk["choices"][0]["delta"]
+        token = delta.get("content", "")
         response += token
         yield response
+           
 
-
-"""
-For information on how to customize the ChatInterface, peruse the gradio docs: https://www.gradio.app/docs/chatinterface
-"""
 chatbot = gr.ChatInterface(
     respond,
+    type="messages",
     additional_inputs=[
         gr.Textbox(value="You are a friendly Chatbot.", label="System message"),
         gr.Slider(minimum=1, maximum=2048, value=512, step=1, label="Max new tokens"),
@@ -77,10 +59,14 @@ chatbot = gr.ChatInterface(
     ],
 )
 
-with gr.Blocks() as demo:
-    with gr.Sidebar():
-        gr.LoginButton()
+demo = gr.Blocks()
+with demo:
     chatbot.render()
+    
+# with gr.Blocks() as demo:
+#     with gr.Sidebar():
+#         gr.LoginButton()
+#     chatbot.render()
 
 
 if __name__ == "__main__":
